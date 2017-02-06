@@ -83,6 +83,52 @@ public class Lex {
 
         }
     }
+
+    public static TokenLexeme isArithmeticOperator(String s) {
+        int state = 1;
+        while (true) {
+            Character ch;
+            if (index < s.length())
+                ch = s.charAt(index);
+            else
+                ch = ' ';
+
+            switch (state) {
+                case 1:
+                    if (ch == '+') {
+                        state = 2;
+                        index++;
+                        break;
+                    } else if (ch == '-') {
+                        state = 3;
+                        index++;
+                        break;
+                    } else if (ch == '*') {
+                        state = 4;
+                        index++;
+                        break;
+                    } else if (ch == '/') {
+                        state = 5;
+                        index++;
+                        break;
+                    } else
+                        return new TokenLexeme(Boolean.FALSE, null, null);
+
+                case 2:
+                    return new TokenLexeme(Boolean.TRUE, "AO", "ADD");
+
+                case 3:
+                    return new TokenLexeme(Boolean.TRUE, "AO", "SUB");
+
+                case 4:
+                    return new TokenLexeme(Boolean.TRUE, "AO", "MUL");
+
+                case 5:
+                    return new TokenLexeme(Boolean.TRUE, "AO", "DIV");
+
+            }
+        }
+    }
 }
 
 
