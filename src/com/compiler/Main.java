@@ -6,7 +6,7 @@ public class Main {
 
         Lex lex = new Lex();
 
-        TokenLexeme p = Lex.isKeyword("char");
+        TokenLexeme p = Lex.isLiteralConstant("'a'");
 
         System.out.print(p.token);
         System.out.print(p.lexeme);

@@ -377,6 +377,177 @@ public class Lex {
             }
         }
     }
+
+    public static TokenLexeme isNumericConstant(String s) {
+        int state = 1;
+        StringBuilder numberBuilder = new StringBuilder();
+        while (true) {
+            Character ch;
+            if (index < s.length())
+                ch = s.charAt(index);
+            else
+                ch = ' ';
+
+            switch (state) {
+                case 1:
+                    if (ch == '0' || ch == '1' || ch == '2' || ch == '3'
+                            || ch == '4' || ch == '5' || ch == '6'
+                            || ch == '7' || ch == '8' || ch == '9') {
+                        state = 2;
+                        numberBuilder.append(ch);
+                        index++;
+                        break;
+                    } else
+                        return new TokenLexeme(Boolean.FALSE, null, null);
+
+                case 2:
+                    if (ch == '0' || ch == '1' || ch == '2' || ch == '3'
+                            || ch == '4' || ch == '5' || ch == '6'
+                            || ch == '7' || ch == '8' || ch == '9') {
+                        state = 2;
+                        numberBuilder.append(ch);
+                        index++;
+                        break;
+                    } else {
+                        index--;
+                        return new TokenLexeme(Boolean.TRUE, "NC", numberBuilder.toString());
+                    }
+            }
+        }
+    }
+
+    public static TokenLexeme isIdentifier(String s) {
+        int state = 1;
+        StringBuilder stringBuilder = new StringBuilder();
+
+        while (true) {
+            Character ch;
+            if (index < s.length())
+                ch = s.charAt(index);
+            else
+                ch = ' ';
+
+            switch (state) {
+                case 1:
+                    if ((int) ch >= 65 && (int) ch <= 122) {
+                        state = 2;
+                        stringBuilder.append(ch);
+                        index++;
+                        break;
+                    } else
+                        return new TokenLexeme(Boolean.FALSE, null, null);
+
+                case 2:
+                    if (((int) ch >= 65 && (int) ch <= 122) || (((int) ch >= 48 && (int) ch <= 57))) {
+                        state = 2;
+                        stringBuilder.append(ch);
+                        index++;
+                        break;
+                    } else {
+                        index--;
+                        return new TokenLexeme(Boolean.TRUE, "ID", stringBuilder.toString());
+                    }
+            }
+        }
+    }
+
+    public static TokenLexeme isLiteralConstant(String s) {
+        int state = 1;
+        StringBuilder stringBuilder = new StringBuilder();
+
+        while (true) {
+            Character ch;
+            if (index < s.length())
+                ch = s.charAt(index);
+            else
+                ch = ' ';
+
+
+            switch (state) {
+                case 1:
+                    if (ch == '\'') {
+                        state = 2;
+                        index++;
+                        break;
+                    } else
+                        return new TokenLexeme(Boolean.FALSE, null, null);
+
+                case 2:
+                    if ((int) ch >= 65 && (int) ch <= 122) {
+                        state = 3;
+                        stringBuilder.append(ch);
+                        index++;
+                        break;
+                    } else
+                        return new TokenLexeme(Boolean.FALSE, null, null);
+
+                case 3:
+                    if (ch == '\'') {
+                        state = 4;
+                        index++;
+                        break;
+                    } else
+                        return new TokenLexeme(Boolean.FALSE, null, null);
+
+                case 4:
+                    return new TokenLexeme(Boolean.TRUE, "LC", stringBuilder.toString());
+            }
+        }
+    }
+
+    public static TokenLexeme isPunctuation(String s) {
+        int state = 1;
+        while (true) {
+            Character ch;
+            if (index < s.length())
+                ch = s.charAt(index);
+            else
+                ch = ' ';
+
+            switch (state) {
+                case 1:
+                    if (ch == '{') {
+                        state = 2;
+                        index++;
+                        break;
+                    } else if (ch == '}') {
+                        state = 3;
+                        index++;
+                        break;
+                    } else if (ch == '(') {
+                        state = 4;
+                        index++;
+                        break;
+                    } else if (ch == ')') {
+                        state = 5;
+                        index++;
+                        break;
+                    } else if (ch == ';') {
+                        state = 6;
+                        index++;
+                        break;
+                    } else
+                        return new TokenLexeme(Boolean.FALSE, null, null);
+
+                case 2:
+                    return new TokenLexeme(Boolean.TRUE, "{", null);
+
+                case 3:
+                    return new TokenLexeme(Boolean.TRUE, "}", null);
+
+                case 4:
+                    return new TokenLexeme(Boolean.TRUE, "(", null);
+
+                case 5:
+                    return new TokenLexeme(Boolean.TRUE, ")", null);
+
+                case 6:
+                    return new TokenLexeme(Boolean.TRUE, ";", null);
+
+            }
+
+        }
+    }
 }
 
 
