@@ -5,10 +5,6 @@ public class Main {
     public static void main(String[] args) {
 
         Lex lex = new Lex();
-
-        TokenLexeme p = Lex.isLiteralConstant("'a'");
-
-        System.out.print(p.token);
-        System.out.print(p.lexeme);
+        lex.analyze("code.txt");
     }
 }

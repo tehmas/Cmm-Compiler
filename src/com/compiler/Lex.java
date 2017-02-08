@@ -1,9 +1,26 @@
 package com.compiler;
 
+import com.sun.org.apache.xpath.internal.compiler.Keywords;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 
+import java.io.*;
+import java.util.Hashtable;
+
 public class Lex {
+    private static Hashtable<String, String> keywords = new Hashtable<String, String>();
     private static int index = 0;
+
+    public Lex() {
+        keywords.put("int", "INT");
+        keywords.put("void", "VOID");
+        keywords.put("char", "CHAR");
+        keywords.put("while", "WHILE");
+        keywords.put("if", "IF");
+        keywords.put("else", "ELSE");
+        keywords.put("return", "RET");
+        keywords.put("cout", "COUT");
+        keywords.put("cin", "CIN");
+    }
 
     public static TokenLexeme isRelationalOperator(String s) {
         int state = 1;
@@ -30,7 +47,7 @@ public class Lex {
                         break;
                     } else {
                         //halt
-                        return new TokenLexeme(Boolean.FALSE, null, null);
+                        return new TokenLexeme(false, null, null);
                     }
 
                 case 2:
@@ -49,11 +66,11 @@ public class Lex {
                     }
 
                 case 3:
-                    return new TokenLexeme(Boolean.TRUE, "RO", "LE");
+                    return new TokenLexeme(true, "RO", "LE");
 
                 case 4:
-                    index--;
-                    return new TokenLexeme(Boolean.TRUE, "RO", "LT");
+                    //index--;
+                    return new TokenLexeme(true, "RO", "LT");
 
                 case 5:
                     if (ch == '=') {
@@ -67,11 +84,11 @@ public class Lex {
                     }
 
                 case 6:
-                    return new TokenLexeme(Boolean.TRUE, "RO", "GE");
+                    return new TokenLexeme(true, "RO", "GE");
 
                 case 7:
-                    index--;
-                    return new TokenLexeme(Boolean.TRUE, "RO", "GT");
+                    //index--;
+                    return new TokenLexeme(true, "RO", "GT");
 
                 case 8:
                     if (ch == '=') {
@@ -79,14 +96,14 @@ public class Lex {
                         break;
                     } else {
                         //halt
-                        return new TokenLexeme(Boolean.FALSE, null, null);
+                        return new TokenLexeme(false, null, null);
                     }
 
                 case 9:
-                    return new TokenLexeme(Boolean.TRUE, "RO", "ET");
+                    return new TokenLexeme(true, "RO", "ET");
 
                 case 10:
-                    return new TokenLexeme(Boolean.TRUE, "RO", "NE");
+                    return new TokenLexeme(true, "RO", "NE");
             }
 
 
@@ -120,20 +137,50 @@ public class Lex {
                         state = 5;
                         index++;
                         break;
+                    } else if (ch == '=') {
+                        state = 6;
+                        index++;
+                        break;
                     } else
-                        return new TokenLexeme(Boolean.FALSE, null, null);
+                        return new TokenLexeme(false, null, null);
 
                 case 2:
-                    return new TokenLexeme(Boolean.TRUE, "AO", "ADD");
+                    return new TokenLexeme(true, "+", null);
 
                 case 3:
-                    return new TokenLexeme(Boolean.TRUE, "AO", "SUB");
+                    return new TokenLexeme(true, "-", null);
 
                 case 4:
-                    return new TokenLexeme(Boolean.TRUE, "AO", "MUL");
+                    if (ch == '/') {
+                        state = 9;
+                        index++;
+                        break;
+                    } else
+                        return new TokenLexeme(true, "*", null);
 
                 case 5:
-                    return new TokenLexeme(Boolean.TRUE, "AO", "DIV");
+                    if (ch == '/') {
+                        state = 7;
+                        index++;
+                        break;
+                    } else if (ch == '*') {
+                        state = 8;
+                        index++;
+                        break;
+                    } else
+                        return new TokenLexeme(true, "/", null);
+
+                case 6:
+                    return new TokenLexeme(true, "=", null);
+
+                case 7:
+                    return new TokenLexeme(true, "SCOM", null);
+
+                case 8:
+                    return new TokenLexeme(true, "MCOM", null);
+
+                case 9:
+                    return new TokenLexeme(true, "CCOM", null);
 
             }
         }
@@ -141,6 +188,7 @@ public class Lex {
 
     public static TokenLexeme isKeyword(String s) {
         int state = 1;
+        StringBuilder stringBuilder = new StringBuilder();
 
         while (true) {
 
@@ -152,228 +200,28 @@ public class Lex {
 
             switch (state) {
                 case 1:
-                    if (ch == 'i') {
+                    if (((int) ch >= 65 && (int) ch <= 90) || ((int) ch >= 97 && (int) ch <= 122)) {
                         state = 2;
+                        stringBuilder.append(ch);
                         index++;
                         break;
-                    } else if (ch == 'v') {
-                        state = 5;
-                        index++;
-                        break;
-                    } else if (ch == 'c') {
-                        state = 9;
-                        index++;
-                        break;
-                    } else if (ch == 'e') {
-                        state = 19;
-                        index++;
-                        break;
-                    } else if (ch == 'w') {
-                        state = 23;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
+                    } else
+                        return new TokenLexeme(false, null, null);
 
                 case 2:
-                    if (ch == 'n') {
-                        state = 3;
-                        index++;
-                        break;
-                    } else if (ch == 'f') {
-                        state = 18;
+                    if (((int) ch >= 65 && (int) ch <= 90) || ((int) ch >= 97 && (int) ch <= 122)) {
+                        state = 2;
+                        stringBuilder.append(ch);
                         index++;
                         break;
                     } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
+                        //index--;
+                        String key = stringBuilder.toString();
+                        if (keywords.containsKey(key))
+                            return new TokenLexeme(true, keywords.get(key), null);
+                        else
+                            return new TokenLexeme(false, null, null);
                     }
-
-                case 3:
-                    if (ch == 't') {
-                        state = 4;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-
-                case 4:
-                    return new TokenLexeme(Boolean.TRUE, "INT", null);
-
-                case 5:
-                    if (ch == 'o') {
-                        state = 6;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 6:
-                    if (ch == 'i') {
-                        state = 7;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 7:
-                    if (ch == 'd') {
-                        state = 8;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 8:
-                    return new TokenLexeme(Boolean.TRUE, "VOID", null);
-
-                case 9:
-                    if (ch == 'h') {
-                        state = 10;
-                        index++;
-                        break;
-                    } else if (ch == 'i') {
-                        state = 13;
-                        index++;
-                        break;
-                    } else if (ch == 'o') {
-                        state = 15;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 10:
-                    if (ch == 'a') {
-                        state = 11;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 11:
-                    if (ch == 'r') {
-                        state = 12;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 12:
-                    return new TokenLexeme(Boolean.TRUE, "CHAR", null);
-
-                case 13:
-                    if (ch == 'n') {
-                        state = 14;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 14:
-                    return new TokenLexeme(Boolean.TRUE, "CIN", null);
-
-                case 15:
-                    if (ch == 'u') {
-                        state = 16;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 16:
-                    if (ch == 't') {
-                        state = 17;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 17:
-                    return new TokenLexeme(Boolean.TRUE, "COUT", null);
-
-                case 18:
-                    return new TokenLexeme(Boolean.TRUE, "IF", null);
-
-                case 19:
-                    if (ch == 'l') {
-                        state = 20;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 20:
-                    if (ch == 's') {
-                        state = 21;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 21:
-                    if (ch == 'e') {
-                        state = 22;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 22:
-                    return new TokenLexeme(Boolean.TRUE, "ELSE", null);
-
-                case 23:
-                    if (ch == 'h') {
-                        state = 24;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 24:
-                    if (ch == 'i') {
-                        state = 25;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 25:
-                    if (ch == 'l') {
-                        state = 26;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 26:
-                    if (ch == 'e') {
-                        state = 27;
-                        index++;
-                        break;
-                    } else {
-                        return new TokenLexeme(Boolean.FALSE, null, null);
-                    }
-
-                case 27:
-                    return new TokenLexeme(Boolean.TRUE, "WHILE", null);
             }
         }
     }
@@ -398,7 +246,7 @@ public class Lex {
                         index++;
                         break;
                     } else
-                        return new TokenLexeme(Boolean.FALSE, null, null);
+                        return new TokenLexeme(false, null, null);
 
                 case 2:
                     if (ch == '0' || ch == '1' || ch == '2' || ch == '3'
@@ -409,8 +257,8 @@ public class Lex {
                         index++;
                         break;
                     } else {
-                        index--;
-                        return new TokenLexeme(Boolean.TRUE, "NC", numberBuilder.toString());
+                        //index--;
+                        return new TokenLexeme(true, "NC", numberBuilder.toString());
                     }
             }
         }
@@ -429,23 +277,23 @@ public class Lex {
 
             switch (state) {
                 case 1:
-                    if ((int) ch >= 65 && (int) ch <= 122) {
+                    if (((int) ch >= 65 && (int) ch <= 90) || ((int) ch >= 97 && (int) ch <= 122)) {
                         state = 2;
                         stringBuilder.append(ch);
                         index++;
                         break;
                     } else
-                        return new TokenLexeme(Boolean.FALSE, null, null);
+                        return new TokenLexeme(false, null, null);
 
                 case 2:
-                    if (((int) ch >= 65 && (int) ch <= 122) || (((int) ch >= 48 && (int) ch <= 57))) {
+                    if (((int) ch >= 65 && (int) ch <= 90) || ((int) ch >= 97 && (int) ch <= 122) || (((int) ch >= 48 && (int) ch <= 57))) {
                         state = 2;
                         stringBuilder.append(ch);
                         index++;
                         break;
                     } else {
-                        index--;
-                        return new TokenLexeme(Boolean.TRUE, "ID", stringBuilder.toString());
+                        //index--;
+                        return new TokenLexeme(true, "ID", stringBuilder.toString());
                     }
             }
         }
@@ -470,16 +318,16 @@ public class Lex {
                         index++;
                         break;
                     } else
-                        return new TokenLexeme(Boolean.FALSE, null, null);
+                        return new TokenLexeme(false, null, null);
 
                 case 2:
-                    if ((int) ch >= 65 && (int) ch <= 122) {
+                    if (((int) ch >= 65 && (int) ch <= 90) || ((int) ch >= 97 && (int) ch <= 122)) {
                         state = 3;
                         stringBuilder.append(ch);
                         index++;
                         break;
                     } else
-                        return new TokenLexeme(Boolean.FALSE, null, null);
+                        return new TokenLexeme(false, null, null);
 
                 case 3:
                     if (ch == '\'') {
@@ -487,10 +335,10 @@ public class Lex {
                         index++;
                         break;
                     } else
-                        return new TokenLexeme(Boolean.FALSE, null, null);
+                        return new TokenLexeme(false, null, null);
 
                 case 4:
-                    return new TokenLexeme(Boolean.TRUE, "LC", stringBuilder.toString());
+                    return new TokenLexeme(true, "LC", stringBuilder.toString());
             }
         }
     }
@@ -522,31 +370,165 @@ public class Lex {
                         state = 5;
                         index++;
                         break;
-                    } else if (ch == ';') {
+                    } else if (ch == '[') {
                         state = 6;
                         index++;
                         break;
+                    } else if (ch == ']') {
+                        state = 7;
+                        index++;
+                        break;
+                    } else if (ch == ';') {
+                        state = 8;
+                        index++;
+                        break;
+                    } else if (ch == ',') {
+                        state = 9;
+                        index++;
+                        break;
                     } else
-                        return new TokenLexeme(Boolean.FALSE, null, null);
+                        return new TokenLexeme(false, null, null);
 
                 case 2:
-                    return new TokenLexeme(Boolean.TRUE, "{", null);
+                    return new TokenLexeme(true, "{", null);
 
                 case 3:
-                    return new TokenLexeme(Boolean.TRUE, "}", null);
+                    return new TokenLexeme(true, "}", null);
 
                 case 4:
-                    return new TokenLexeme(Boolean.TRUE, "(", null);
+                    return new TokenLexeme(true, "(", null);
 
                 case 5:
-                    return new TokenLexeme(Boolean.TRUE, ")", null);
+                    return new TokenLexeme(true, ")", null);
 
                 case 6:
-                    return new TokenLexeme(Boolean.TRUE, ";", null);
+                    return new TokenLexeme(true, "[", null);
+
+                case 7:
+                    return new TokenLexeme(true, "]", null);
+
+                case 8:
+                    return new TokenLexeme(true, ";", null);
+
+                case 9:
+                    return new TokenLexeme(true, ",", null);
 
             }
 
         }
+    }
+
+    public int analyze(String fileName) {
+        try {
+            FileInputStream fstream = new FileInputStream(fileName);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fstream));
+            FileOutputStream wordsFile = new FileOutputStream("words.txt");
+            Writer wordsWriter = new BufferedWriter(new OutputStreamWriter(wordsFile));
+            FileOutputStream tableFile = new FileOutputStream("table.txt");
+            Writer tableWriter = new BufferedWriter(new OutputStreamWriter(tableFile));
+
+            StringBuilder stringBuilder = new StringBuilder();
+            try {
+                String line;
+                int lineNum = 0;
+
+                boolean mComment = false;
+                while ((line = bufferedReader.readLine()) != null) {
+
+                    int pointer = 0;
+
+                    boolean sComment = false;
+                    while (pointer < line.length()) {
+                        index = pointer;
+                        boolean pComment = false;
+                        if (line.charAt(index) != ' ' && line.charAt(index) != '\t') {
+                            TokenLexeme p = isKeyword(line);
+                            if (!p.valid) {
+                                index = pointer;
+                                p = isIdentifier(line);
+                            }
+
+                            if (!p.valid) {
+                                index = pointer;
+                                p = isLiteralConstant(line);
+                            }
+
+                            if (!p.valid) {
+                                index = pointer;
+                                p = isNumericConstant(line);
+                            }
+
+                            if (!p.valid) {
+                                index = pointer;
+                                p = isArithmeticOperator(line);
+
+                                if (p.valid && p.token == "SCOM") {
+                                    line = "";
+                                    p.valid = false;
+                                    sComment = true;
+                                } else if (p.valid && p.token == "MCOM") {
+                                    p.valid = false;
+                                    mComment = true;
+                                } else if (p.valid && p.token == "CCOM") {
+                                    p.valid = false;
+                                    mComment = false;
+                                    pComment = true;
+
+                                }
+                            }
+
+                            if (!p.valid) {
+                                index = pointer;
+                                p = isRelationalOperator(line);
+                            }
+
+                            if (!p.valid) {
+                                index = pointer;
+                                p = isPunctuation(line);
+                            }
+
+                            if (!p.valid && !sComment && !mComment) {
+                                System.out.println("Error: Unrecognized token at line " + lineNum);
+                                pointer = index + 1;
+                            } else if (!sComment && !mComment && !pComment) {
+                                stringBuilder.setLength(0);
+                                stringBuilder.append("(");
+                                stringBuilder.append(p.token);
+                                stringBuilder.append(",");
+
+                                if (p.lexeme == null)
+                                    stringBuilder.append("null");
+
+                                else
+                                    stringBuilder.append(p.lexeme);
+                                stringBuilder.append(")\n");
+                                wordsWriter.write(stringBuilder.toString());
+
+                                if (p.token == "ID") {
+                                    tableWriter.write(p.lexeme + "\n");
+                                }
+
+                                pointer = index;
+                            }
+                        } else
+                            pointer += 1;
+                    }
+
+                    lineNum += 1;
+                }
+
+                bufferedReader.close();
+                wordsWriter.close();
+                tableWriter.close();
+            } catch (IOException e) {
+                return e.hashCode();
+            }
+
+        } catch (FileNotFoundException e) {
+            return e.hashCode();
+        }
+
+        return 0;
     }
 }
 
