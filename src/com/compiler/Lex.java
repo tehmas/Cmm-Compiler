@@ -5,6 +5,7 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.io.*;
 import java.util.Hashtable;
+import java.util.Set;
 
 public class Lex {
     private static Hashtable<String, String> keywords = new Hashtable<String, String>();
@@ -61,7 +62,6 @@ public class Lex {
                         break;
                     } else {
                         state = 4;
-                        index++;
                         break;
                     }
 
@@ -79,7 +79,6 @@ public class Lex {
                         break;
                     } else {
                         state = 7;
-                        index++;
                         break;
                     }
 
@@ -95,7 +94,6 @@ public class Lex {
                         state = 9;
                         break;
                     } else {
-                        //halt
                         return new TokenLexeme(false, null, null);
                     }
 
@@ -419,6 +417,8 @@ public class Lex {
     }
 
     public int analyze(String fileName) {
+        Hashtable<String, String> identifiers = new Hashtable<String, String>();
+
         try {
             FileInputStream fstream = new FileInputStream(fileName);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fstream));
@@ -504,8 +504,8 @@ public class Lex {
                                 stringBuilder.append(")\n");
                                 wordsWriter.write(stringBuilder.toString());
 
-                                if (p.token == "ID") {
-                                    tableWriter.write(p.lexeme + "\n");
+                                if (p.token == "ID" && !identifiers.containsKey(p.lexeme)) {
+                                    identifiers.put(p.lexeme, "ID");
                                 }
 
                                 pointer = index;
@@ -519,6 +519,11 @@ public class Lex {
 
                 bufferedReader.close();
                 wordsWriter.close();
+
+                Set<String> keys = identifiers.keySet();
+                for (String key : keys) {
+                    tableWriter.write(key + '\n');
+                }
                 tableWriter.close();
             } catch (IOException e) {
                 return e.hashCode();

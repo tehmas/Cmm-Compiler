@@ -2,7 +2,7 @@ void SelectionSort(int[] num, int length)
 {
     int i, j, first, temp;
     i = length;
-    while (i> 0)
+    while (i> 0) {
     {
         first = 0;          		// initialize to subscript of first element
         j = 1;
