@@ -4,21 +4,28 @@ import com.sun.org.apache.xpath.internal.compiler.Keywords;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 
 public class Lex {
     private static Hashtable<String, String> keywords = new Hashtable<String, String>();
     private static int index = 0;
 
+    public ArrayList<String> tokenList;
+
     public Lex() {
+
+        tokenList = new ArrayList<>();
+
         keywords.put("int", "INT");
         keywords.put("void", "VOID");
         keywords.put("char", "CHAR");
         keywords.put("while", "WHILE");
         keywords.put("if", "IF");
         keywords.put("else", "ELSE");
-        keywords.put("return", "RET");
+        keywords.put("return", "RETURN");
         keywords.put("cout", "COUT");
         keywords.put("cin", "CIN");
     }
@@ -169,7 +176,7 @@ public class Lex {
                         return new TokenLexeme(true, "/", null);
 
                 case 6:
-                    return new TokenLexeme(true, "=", null);
+                    return new TokenLexeme(true, "AS", "ET");
 
                 case 7:
                     return new TokenLexeme(true, "SCOM", null);
@@ -422,7 +429,7 @@ public class Lex {
         try {
             FileInputStream fstream = new FileInputStream(fileName);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fstream));
-            FileOutputStream wordsFile = new FileOutputStream("words.txt");
+            FileOutputStream wordsFile = new FileOutputStream("lex_output.txt");
             Writer wordsWriter = new BufferedWriter(new OutputStreamWriter(wordsFile));
             FileOutputStream tableFile = new FileOutputStream("table.txt");
             Writer tableWriter = new BufferedWriter(new OutputStreamWriter(tableFile));
@@ -494,10 +501,10 @@ public class Lex {
                                 stringBuilder.setLength(0);
                                 stringBuilder.append("(");
                                 stringBuilder.append(p.token);
-                                stringBuilder.append(",");
+                                stringBuilder.append(":");
 
                                 if (p.lexeme == null)
-                                    stringBuilder.append("null");
+                                    stringBuilder.append("^");
 
                                 else
                                     stringBuilder.append(p.lexeme);
@@ -508,6 +515,8 @@ public class Lex {
                                     identifiers.put(p.lexeme, "ID");
                                 }
 
+                                if (p.token != null)
+                                    tokenList.add(p.token);
                                 pointer = index;
                             }
                         } else
