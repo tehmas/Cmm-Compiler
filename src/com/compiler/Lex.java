@@ -14,11 +14,12 @@ public class Lex {
     private static int index = 0;
 
     public ArrayList<String> tokenList;
+    public ArrayList<String> lexemeList;
 
     public Lex() {
 
         tokenList = new ArrayList<>();
-
+        lexemeList = new ArrayList<>();
         keywords.put("int", "INT");
         keywords.put("void", "VOID");
         keywords.put("char", "CHAR");
@@ -431,7 +432,7 @@ public class Lex {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fstream));
             FileOutputStream wordsFile = new FileOutputStream("lex_output.txt");
             Writer wordsWriter = new BufferedWriter(new OutputStreamWriter(wordsFile));
-            FileOutputStream tableFile = new FileOutputStream("table.txt");
+            FileOutputStream tableFile = new FileOutputStream("identifiers.txt");
             Writer tableWriter = new BufferedWriter(new OutputStreamWriter(tableFile));
 
             StringBuilder stringBuilder = new StringBuilder();
@@ -515,12 +516,27 @@ public class Lex {
                                     identifiers.put(p.lexeme, "ID");
                                 }
 
-                                if (p.token != null)
+                                if (p.token != null) {
                                     tokenList.add(p.token);
+                                }
+
+                                if(p.lexeme != null){
+                                    lexemeList.add(p.lexeme);
+                                }
+
+                                else{
+                                    lexemeList.add("^");
+                                }
                                 pointer = index;
                             }
-                        } else
-                            pointer += 1;
+
+                            else {
+                                pointer = pointer + 1;
+                            }
+                        }
+                        else {
+                            pointer = pointer + 1;
+                        }
                     }
 
                     lineNum += 1;
@@ -532,6 +548,7 @@ public class Lex {
                 Set<String> keys = identifiers.keySet();
                 for (String key : keys) {
                     tableWriter.write(key + '\n');
+                    System.out.print(key + '\n');
                 }
                 tableWriter.close();
             } catch (IOException e) {

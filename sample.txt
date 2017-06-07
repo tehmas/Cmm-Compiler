@@ -1,0 +1,21 @@
+int main(){
+
+  int factorial;
+  int x;
+  int z;
+
+  cin num;
+  cin factorial;
+  cin x;
+  cin z;
+
+
+  while(num >= x)
+  {
+    factorial = factorial * num;
+    num = num - z;
+  }
+
+  cout factorial;
+
+}

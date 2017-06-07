@@ -3,24 +3,36 @@ package com.compiler;
 import javafx.beans.binding.BooleanExpression;
 
 import java.beans.Expression;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.function.Function;
 
 public class Parser {
 
+    FileOutputStream treeFile;
     public ArrayList<String> tokenList;
     String curr;
     int i = 0;
-
+    private int spaceCount = 0;
     public Parser() {
+
 
     }
 
     public void parse() {
-        curr = tokenList.get(i);
-        Program();
-        if (i != tokenList.size()) {
-            System.out.print("i:" + i + " total:" + tokenList.size());
+        try{
+            treeFile = new FileOutputStream("parse_tree.txt");
+            curr = tokenList.get(i);
+            Program();
+            if (i != tokenList.size()) {
+                System.out.print("i:" + i + " total:" + tokenList.size());
+            }
+            treeFile.close();
+        }
+        catch (Exception ex)
+        {
+            System.out.print(ex);
         }
     }
 
@@ -35,6 +47,8 @@ public class Parser {
     }
 
     void Type() {
+        spaceCount++;
+        PrintBegin("TYPE");
         if (curr.equals("VOID")) {
             match("VOID");
         } else if (curr.equals("INT")) {
@@ -42,9 +56,12 @@ public class Parser {
         } else if (curr.equals("CHAR")) {
             match("CHAR");
         }
+        spaceCount--;
     }
 
     void VariableDeclaration() {
+        spaceCount++;
+        PrintBegin("VARIABLEDECLARATION");
         Type();
         if (curr.equals("ID")) {
             match("ID");
@@ -52,9 +69,12 @@ public class Parser {
                 match(";");
             }
         }
+        spaceCount--;
     }
 
     void AssignmentStatement() {
+        spaceCount++;
+        PrintBegin("ASSIGNMENTSTATEMENT");
         if (curr.equals("AS")) {
             match("AS");
             Expression();
@@ -63,14 +83,20 @@ public class Parser {
                 match(";");
             }
         }
+        spaceCount--;
     }
 
     void Expression() {
+        spaceCount++;
+        PrintBegin("EXPRESSION");
         Term();
         ExpressionPrime();
+        spaceCount--;
     }
 
     void ExpressionPrime() {
+        spaceCount++;
+        PrintBegin("EXPRESSIONPRIME");
         if (curr.equals("+")) {
             match("+");
             Term();
@@ -80,14 +106,19 @@ public class Parser {
             Term();
             ExpressionPrime();
         } else ;
+        spaceCount--;
     }
 
     void Term() {
+        spaceCount++;
+        PrintBegin("TERM");
         Factor();
         TermPrime();
+        spaceCount--;
     }
 
     void Factor() {
+        spaceCount++;
         if (curr.equals("ID")) {
             match("ID");
         } else if (curr.equals("NC")) {
@@ -99,9 +130,12 @@ public class Parser {
                 match(")");
             }
         }
+        spaceCount--;
     }
 
     void TermPrime() {
+        spaceCount++;
+        PrintBegin("TERMPRIME");
         if (curr.equals("*")) {
             match("*");
             Factor();
@@ -111,11 +145,14 @@ public class Parser {
             Factor();
             TermPrime();
         } else ;
+        spaceCount--;
     }
 
     void BooleanExpression() {
         // TRUE and FALSE are just for future purposes
         // because currently there is only int, char and void types
+        spaceCount++;
+        PrintBegin("BOOLEANEXPRESSION");
         if (curr.equals("TRUE")) {
             match("TRUE");
         } else if (curr.equals("FALSE")) {
@@ -127,9 +164,12 @@ public class Parser {
                 Expression();
             }
         }
+        spaceCount--;
     }
 
     void ConditionalStatement() {
+        spaceCount++;
+        PrintBegin("CONDITIONALSTATEMENT");
         if (curr.equals("IF")) {
             match("IF");
             if (curr.equals("(")) {
@@ -142,25 +182,33 @@ public class Parser {
                 }
             }
         }
+        spaceCount--;
     }
 
     void OptionalElse() {
+        spaceCount++;
+        PrintBegin("OPTIONALELSE");
         if (curr.equals("ELSE")) {
             match("ELSE");
             ExtendedCondition();
         } else ;
-
+        spaceCount--;
     }
 
     void ExtendedCondition() {
+        spaceCount++;
+        PrintBegin("EXTENDEDCONDITION");
         if (curr.equals("IF")) {
             ConditionalStatement();
         } else if (curr.equals("{")) {
             CodeChoice();
         }
+        spaceCount--;
     }
 
     void Loop() {
+        spaceCount++;
+        PrintBegin("LOOP");
         if (curr.equals("WHILE")) {
             match("WHILE");
             if (curr.equals("(")) {
@@ -172,9 +220,12 @@ public class Parser {
                 }
             }
         }
+        spaceCount--;
     }
 
     void Input() {
+        spaceCount++;
+        PrintBegin("INPUT");
         if (curr.equals("CIN")) {
             match("CIN");
             if (curr.equals(">>")) {
@@ -188,9 +239,12 @@ public class Parser {
                 }
             }
         }
+        spaceCount--;
     }
 
     void Output() {
+        spaceCount++;
+        PrintBegin("OUTPUT");
         if (curr.equals("COUT")) {
             match("COUT");
 
@@ -200,13 +254,19 @@ public class Parser {
                 OutputChoices();
             }
         }
+        spaceCount--;
     }
 
     void OutputChoices() {
+        spaceCount++;
+        PrintBegin("OutputChoices");
         Expression();
+        spaceCount--;
     }
 
     void ReturnStatement() {
+        spaceCount++;
+        PrintBegin("RETURNSTATEMENT");
         if (curr.equals("RETURN")) {
             match("RETURN");
             ReturnChoices();
@@ -214,16 +274,22 @@ public class Parser {
                 match(";");
             }
         }
+        spaceCount--;
 
     }
 
     void ReturnChoices() {
+        spaceCount++;
+        PrintBegin("RETURNCHOICES");
         if (curr.equals("ID") || curr.equals("LC") || curr.equals("(")) {
             Expression();
         } else ;
+        spaceCount--;
     }
 
     void FunctionCall() {
+        spaceCount++;
+        PrintBegin("FUNCTIONCALL");
         if (curr.equals("(")) {
             match("(");
             ArgumentList();
@@ -235,24 +301,33 @@ public class Parser {
                 }
             }
         }
-
+        spaceCount--;
     }
 
     void ArgumentList() {
+        spaceCount++;
+        PrintBegin("ARGUMENTLIST");
         if (curr.equals("ID")) {
             match("ID");
             AdditionalArgument();
         }
+        spaceCount--;
     }
 
     void AdditionalArgument() {
+        spaceCount++;
+        PrintBegin("ADDITIONALARGUMENT");
         if (curr.equals(",")) {
             match(",");
             ArgumentList();
         } else ;
+
+        spaceCount--;
     }
 
     void FunctionDefinition() {
+        spaceCount++;
+        PrintBegin("FUNCTIONDEFINITION");
         Type();
         if (curr.equals("ID")) {
             match("ID");
@@ -274,18 +349,25 @@ public class Parser {
                 }
             }
         }
+
+        spaceCount--;
     }
 
     void ParameterList() {
+        spaceCount++;
+        PrintBegin("ParameterList");
         Type();
         OptinalArrayType();
         if (curr.equals("ID")) {
             match("ID");
             AdditionalParameters();
         } else ;
+        spaceCount--;
     }
 
     void OptinalArrayType() {
+        spaceCount++;
+        PrintBegin("OPTIONALARRAYTYPE");
         if (curr.equals("[")) {
             match("[");
 
@@ -293,9 +375,12 @@ public class Parser {
                 match("]");
             }
         } else ;
+        spaceCount--;
     }
 
     void AdditionalParameters() {
+        spaceCount++;
+        PrintBegin("ADDITIONALPARAMETERS");
         if (curr.equals(",")) {
             match(",");
             Type();
@@ -305,16 +390,45 @@ public class Parser {
                 AdditionalParameters();
             }
         } else ;
+
+        spaceCount--;
+    }
+
+
+    void PrintBegin(String functionName){
+        try{
+            String spaces = "      ";
+            String bars = "____";
+            String endLine = "\n";
+            for(int j = 0; j < spaceCount; j++)
+            {
+                treeFile.write(spaces.getBytes());
+            }
+            treeFile.write(bars.getBytes());
+            treeFile.write(functionName.getBytes());
+            treeFile.write(endLine.getBytes());
+        }
+
+        catch(Exception ex)
+        {
+            System.out.print(ex);
+        }
     }
 
     void Program() {
+        spaceCount++;
+        PrintBegin("PROGRAM");
         if (curr.equals("INT") || curr.equals("VOID") || curr.equals("CHAR")) {
             FunctionDefinition();
             Program();
-        } else ;
+       }
+        else ;
+        spaceCount--;
     }
 
     void CodeChoice() {
+        spaceCount++;
+        PrintBegin("CODECHOICE");
         if (curr.equals("{")) {
             match("{");
             Multiline();
@@ -327,19 +441,24 @@ public class Parser {
                 curr.equals("RETURN") || curr.equals("IF") || curr.equals("ID")) {
             SingleLine();
         }
+        spaceCount--;
     }
 
     void Multiline() {
-
+        spaceCount++;
+        PrintBegin("MULTILINE");
         if (curr.equals("INT") || curr.equals("VOID") || curr.equals("CHAR") ||
                 curr.equals("WHILE") || curr.equals("CIN") || curr.equals("COUT") ||
                 curr.equals("RETURN") || curr.equals("IF") || curr.equals("ID")) {
             SingleLine();
             Multiline();
         } else ;
+        spaceCount--;
     }
 
     void SingleLine() {
+        spaceCount++;
+        PrintBegin("SINGLELINE");
         if (curr.equals("INT") || curr.equals("VOID") || curr.equals("CHAR")) {
             VariableDeclaration();
         } else if (curr.equals("WHILE")) {
@@ -355,21 +474,27 @@ public class Parser {
         } else if (curr.equals("ID")) {
             IDStatement();
         }
+        spaceCount--;
     }
 
     void IDStatement() {
+        spaceCount++;
+        PrintBegin("IDSTATEMENT");
         if (curr.equals("ID")) {
             match("ID");
             IDStatementChoice();
         }
+        spaceCount--;
     }
 
     void IDStatementChoice() {
+        spaceCount++;
         if (curr.equals("AS")) {
             AssignmentStatement();
 
         } else if (curr.equals("(")) {
             FunctionCall();
         }
+        spaceCount--;
     }
 };

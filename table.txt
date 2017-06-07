@@ -1,0 +1,11 @@
+main
+j
+i
+sum
+e
+d
+c
+y
+b
+x
+a
